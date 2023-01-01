@@ -16,7 +16,6 @@ int get_next_space(char* str, int start){
     for(i = start; str[i] != ' ' && i < strlen(str); i++);
     return i == strlen(str) ? -1 : i;
 }
-
 int get_int(char* str, int start){
     int i, res = 0;
     for(i = start; i < strlen(str) && str[i] >= '0' && str[i] <= '9'; i++){
@@ -33,7 +32,7 @@ int main(int argc, char const *argv[])
 	int opt = 1;
 	int addrlen = sizeof(address);
 	char buffer[1024] = {0};
-	char *hello = "Hello\n";
+	char *hello = "Hello";
     char *del;
 
 	// Creating socket file descriptor
@@ -74,7 +73,56 @@ int main(int argc, char const *argv[])
 	}
 
     while(1){
-        // write your code!
+        int len = recv(new_socket,buffer,sizeof(buffer),0);
+	int no = 0;
+        int English = 0,a = 0,b = 0,i = 3,ans = 0;
+	for(int j=3;j<len;j++){
+	    if((buffer[i]<'0' || buffer[i] >'9') && 
+			(buffer[i] <'a' || buffer[i] >'z') &&
+				buffer[i]!=' ')
+		no = 1;
+	}
+	//printf("%s",buffer);
+	//printf("%s",input);
+        if(buffer[i]!=' ')
+	    no = 1;
+	if(buffer[i+1] == '-')
+	{
+	    a = get_int(buffer,i+2);
+	    a *= -1;
+	}
+	else
+	    a = get_int(buffer,i+1);
+	i = get_next_space(buffer,i+1);
+	if(buffer[i+1]=='-')
+	{
+	    b = get_int(buffer,i+2);
+	    b *= -1;
+	}
+	else
+	    b = get_int(buffer,i+1);
+
+	char tmp[4] = {buffer[0],buffer[1],buffer[2],0};
+        
+        //printf("%d %d %d %s\n",no,a,b,tmp);
+	if(no == 1){
+	    send(new_socket,hello,sizeof(hello),0);
+	    continue;
+	}
+	else if(tmp[0] == 'a' && tmp[1] == 'd' && tmp[2] == 'd')
+	    ans = a+b; 
+	else if(tmp[0] == 'm' && tmp[1] == 'u' && tmp[2] == 'l')
+	    ans = a * b;
+	else if(tmp[0] == 'a' && tmp[1] == 'b' && tmp[2] == 's')
+	{
+	    ans = a;
+	    if(ans < 0)
+		ans *= -1;
+	}
+        char output[1024] = {0};
+	sprintf(output,"%d",ans);
+	//printf("%s\n%d %d \n%d\n%s\n",tmp,a,b,ans,output);
+    	send(new_socket,output,sizeof(output),0);
     }
 
 	return 0;
